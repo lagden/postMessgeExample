@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Filho</title>
+</head>
+<body>
+    <main role="main">
+        <header>
+            <h1>Filho</h1>
+        </header>
+    </main>
+    <script type="text/javascript">
+        function recebe(event) {
+            envia(event);
+        }
+
+        function envia(ev) {
+            ev.source.postMessage("go to Yeahhhh", ev.origin);
+        }
+
+        window.addEventListener("message", recebe, false);
+    </script>
+</body>
+</html>
