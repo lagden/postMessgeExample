@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Example Iframe</title>
+</head>
+<body>
+    <main role="main" style="background: red">
+        <h1>Site do cliente</h1>
+        <!-- <iframe id="mercury" frameborder="0" src="//lagden.webfactional.com/mercury/mercury.html" width="100%"></iframe> -->
+        <iframe id="mercury" frameborder="0" src="http://10.0.1.56:8080/?mercury=mercury&empresa=8&debugadorTex=debugadorTex" width="100%" style="background: green"></iframe>
+    </main>
+    <script type="text/javascript">
+        (function() {
+            var ifrs = document.createElement('script');
+            ifrs.src = 'cliente.js';
+            ifrs.type = 'text/javascript';
+            ifrs.async = 'true';
+            ifrs.onload = ifrs.onreadystatechange = function() {
+                var rs = this.readyState;
+                if (rs && rs !== 'complete' && rs !== 'loaded') return;
+                try {
+                    iframeResizeClient.load('#mercury');
+                } catch (e) {
+                    console.log(e);
+                }
+            };
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ifrs, s);
+        })();
+    </script>
+</body>
+</html>
