@@ -1,33 +1,53 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="utf-8">
-    <title>Example Iframe</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Sistema de cotação de seguros on-line desenvolvido pela Tex Tecnologia">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sample Iframe Auto Resize</title>
 </head>
+
 <body>
-    <main role="main" style="background: red">
-        <h1>Site do cliente</h1>
-        <!-- <iframe id="mercury" frameborder="0" src="//lagden.webfactional.com/mercury/mercury.html" width="100%"></iframe> -->
-        <iframe id="mercury" frameborder="0" src="http://10.0.1.56:8080/?mercury=mercury&empresa=8&debugadorTex=debugadorTex" width="100%" style="background: green"></iframe>
-    </main>
-    <script type="text/javascript">
-        (function() {
-            var ifrs = document.createElement('script');
-            ifrs.src = 'cliente.js';
-            ifrs.type = 'text/javascript';
-            ifrs.async = 'true';
-            ifrs.onload = ifrs.onreadystatechange = function() {
-                var rs = this.readyState;
-                if (rs && rs !== 'complete' && rs !== 'loaded') return;
-                try {
-                    iframeResizeClient.load('#mercury');
-                } catch (e) {
-                    console.log(e);
-                }
-            };
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(ifrs, s);
-        })();
-    </script>
+  <main role="main" style="background: red">
+    <h1>Site do cliente</h1>
+    <iframe id="app" frameborder="0" src="http://10.0.1.165:8000/app.html" width="100%"></iframe>
+    <!-- <iframe id="app" frameborder="0" src="http://nimble.dev/tex/1" width="100%"></iframe> -->
+  </main>
+  <script type="text/javascript">
+  function loadJS(file, callback) {
+    var h, s, d = document;
+    h = d.head || d.getElementsByTagName('head')[0];
+    s = d.createElement('script');
+    s.src = file;
+    s.type = 'text/javascript';
+    s.async = true;
+    if (s.readyState) {
+      s.onreadystatechange = function() {
+        if (s.readyState === 'loaded' || s.readyState === 'complete') {
+          s.onreadystatechange = null;
+          if (callback)
+            callback();
+        }
+      };
+    } else {
+      s.onload = function() {
+        if (callback)
+          callback();
+      };
+    }
+    h.appendChild(s);
+  }
+
+  window.addEventListener('message', function(event) {
+    console.log(event.data);
+    var iframe = document.querySelector('#app');
+    loadJS('cliente.js', function() {
+      IframeResize.load(iframe, 'http://10.0.1.165:8000');
+    });
+  });
+  </script>
 </body>
+
 </html>

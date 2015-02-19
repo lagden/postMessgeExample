@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>External App</title>
+  <style type="text/css">
+  html {
+    background-color: green;
+  }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  .bloco {
+    width: 100px;
+    height: 100px;
+    background-color: blue;
+    overflow: hidden;
+  }
+  </style>
+</head>
+
+<body>
+  <main role="main">
+    <h1>External App</h1>
+    <button type="button" id="add">Add</button>
+    <button type="button" id="rm">Remove</button>
+  </main>
+  <script type="text/javascript">
+  var cc = 0;
+  var btnAdd = document.querySelector('#add');
+  var btnRm = document.querySelector('#rm');
+
+  btnAdd.addEventListener("click", function() {
+    btnRm.insertAdjacentHTML('afterend', '<div class="bloco">' + cc + '</div>');
+    cc++;
+  }, false);
+
+  btnRm.addEventListener("click", function() {
+    var b = document.querySelector('.bloco');
+    if (b) {
+      b.remove()
+      cc--;
+    }
+  }, false);
+
+  // postMessage
+  var source, origin;
+  var html = document.querySelector('html');
+  var body = document.querySelector('body');
+  var currentHeight = 0;
+
+  function updateHeight() {
+    var bodyBounds = body.getBoundingClientRect();
+    var htmlBounds = html.getBoundingClientRect();
+    return Math.max(htmlBounds.height, bodyBounds.height);
+  }
+
+  function envia(h) {
+    if (source && origin) {
+      source.postMessage(h, origin);
+    }
+  }
+
+  function antesEnvia() {
+    var h = updateHeight();
+    if (currentHeight !== h) {
+      currentHeight = h;
+      envia(currentHeight);
+    }
+  }
+
+  function recebe(event) {
+    console.log('recebe', event.data);
+    if (event.data === 'TExClientInit') {
+      origin = event.origin;
+      source = event.source;
+      envia(currentHeight);
+    }
+  }
+
+  // Check if is Iframe
+  if (window.self !== window.top) {
+
+    console.log('is Iframe!!!', window.top.location.origin);
+
+    window.addEventListener('message', recebe);
+    window.parent.postMessage('TExAppInit', window.parent.location.origin);
+    console.log(window.location)
+
+    // MutationObserver
+    var mo = new MutationObserver(function() {
+      antesEnvia()
+    });
+
+    // configuration of the observer:
+    var config = {
+      childList: true,
+      attributes: true,
+      characterData: true,
+      subtree: true,
+      attributeOldValue: true,
+      characterDataOldValue: true
+    };
+
+    mo.observe(body, config);
+
+  } else {
+    console.log('is not Iframe!!!');
+  }
+  </script>
+</body>
+
+</html>
