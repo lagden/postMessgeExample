@@ -31,7 +31,6 @@
     <button type="button" id="rm">Remove</button>
   </main>
   <script type="text/javascript">
-  /* globals console */
 
   'use strict';
 
@@ -57,11 +56,13 @@
   // ---
 
   // postMessage
-  var source, origin;
+  var source, origin, intervalo;
   var html = document.querySelector('html');
   var body = document.querySelector('body');
   var currentHeight = 0;
   var clientMsg = 'TExClient';
+  var isInIframe = (window.parent !== window);
+  var hasRAF = 'requestAnimationFrame' in window;
 
   function updateHeight() {
     var bodyBounds = body.getBoundingClientRect();
@@ -75,56 +76,53 @@
     }
   }
 
-  function antesEnvia() {
+  function checkHeight() {
     var h = updateHeight();
     if (currentHeight !== h) {
       currentHeight = h;
       envia(currentHeight);
     }
-  }
 
-  function recebe(event) {
-    console.log('recebe', event.data);
-    if (event.data === clientMsg) {
-      origin = event.origin;
-      source = event.source;
-      envia(currentHeight);
+    if (hasRAF) {
+      window.requestAnimationFrame(checkHeight);
     }
   }
 
-  // Check if is Iframe
-  if (window.self !== window.top) {
+  function recebe(event) {
+    if (event.data === clientMsg) {
+      checkHeight();
+    }
+  }
 
-    console.log('is Iframe!!!', window.top.location.origin);
+  function initObserver() {
+    if (hasRAF) {
+      window.requestAnimationFrame(checkHeight);
+    } else {
+      intervalo = setInterval(checkHeight, 100);
+    }
+  }
 
-    window.addEventListener('message', recebe);
-    window.parent.postMessage(
-      JSON.stringify({
-        'app': 'TExAppReady',
-        'msg': clientMsg,
-        'origin': window.location.origin
-      }), window.parent.location.origin);
+  function waitingParentOrigin(event) {
+    if (event.data === 'luke i am your father') {
+      origin = event.origin;
+      source = event.source;
 
-    // MutationObserver
-    var mo = new MutationObserver(function(mutations) {
-      console.log('MutationObserver-->', mutations[0].target.tagName + ' ' + mutations[0].type);
-      antesEnvia();
-    });
+      initObserver();
 
-    var config = {
-      childList: true,
-      attributes: true,
-      characterData: false,
-      subtree: true,
-      attributeOldValue: true,
-      characterDataOldValue: false,
-      attributeFilter: ['autocomplete']
-    };
+      window.removeEventListener('message', waitingParentOrigin, false);
+      window.addEventListener('message', recebe, false);
 
-    mo.observe(body, config);
+      source.postMessage(
+        JSON.stringify({
+          'app': 'TExAppReady',
+          'msg': clientMsg,
+          'origin': window.location.origin
+        }), origin);
+    }
+  }
 
-  } else {
-    console.log('is not Iframe!!!');
+  if (isInIframe) {
+    window.addEventListener('message', waitingParentOrigin, false);
   }
   </script>
 </body>

@@ -6,15 +6,46 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sample Iframe Auto Resize</title>
+  <style>
+    html{
+      background: red;
+    }
+
+    html, body{
+      margin: 0;
+      padding: 0;
+    }
+
+    iframe{
+      display: block;
+      min-height: 300px;
+    }
+
+    h1{
+      margin: 0;
+      padding: 10px;
+    }
+
+  </style>
 </head>
 
 <body>
-  <main role="main" style="background: red">
+  <main role="main" class="main">
     <h1>Site do cliente</h1>
-    <iframe id="app" frameborder="0" src="http://localhost:8000/app.html" width="100%"></iframe>
-    <!-- <iframe id="app" frameborder="0" src="http://nimble.dev/tex/1" width="100%"></iframe> -->
+    <iframe id="app" frameborder="0" src="http://localhost:8000/app.html" width="100%" height="100%" seamless="seamless"></iframe>
   </main>
   <script type="text/javascript">
+  'use strict';
+
+  var iframe = document.querySelector('#app');
+  var baseUrl = getUrl(iframe.src);
+  var intervalo;
+
+  function getUrl(baseUrl) {
+      var d = baseUrl.split('/');
+      return d[0] + '//' + d[2];
+  }
+
   function loadJS(file, callback) {
     var h, s, d = document;
     h = d.head || d.getElementsByTagName('head')[0];
@@ -40,17 +71,27 @@
   }
 
   function iframeMsg(event) {
+    clearInterval(intervalo);
     window.removeEventListener('message', iframeMsg, false);
     var item = JSON.parse(event.data);
     if (item.app === 'TExAppReady') {
       loadJS('cliente.js', function() {
-        var iframe = document.querySelector('#app');
-        var ir = new IframeResize(iframe, item.msg, item.origin, true);
+        new IframeResize(iframe, item.msg, item.origin, false);
       });
     }
   }
 
+  function callSon() {
+    iframe.contentWindow.postMessage('luke i am your father', baseUrl);
+  }
+
+  function iframeLoaded() {
+    // iframe.removeEventListener('load', iframeLoaded, false);
+    intervalo = setInterval(callSon, 100);
+  }
+
   window.addEventListener('message', iframeMsg, false);
+  iframe.addEventListener('load', iframeLoaded, false);
   </script>
 </body>
 
