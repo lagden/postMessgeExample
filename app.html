@@ -3,6 +3,8 @@
 
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>External App</title>
   <style type="text/css">
   html {
@@ -29,28 +31,37 @@
     <button type="button" id="rm">Remove</button>
   </main>
   <script type="text/javascript">
+  /* globals console */
+
+  'use strict';
+
+  // App stuff
   var cc = 0;
   var btnAdd = document.querySelector('#add');
   var btnRm = document.querySelector('#rm');
 
-  btnAdd.addEventListener("click", function() {
+  btnAdd.addEventListener('click', function() {
     btnRm.insertAdjacentHTML('afterend', '<div class="bloco">' + cc + '</div>');
     cc++;
   }, false);
 
-  btnRm.addEventListener("click", function() {
+  btnRm.addEventListener('click', function() {
     var b = document.querySelector('.bloco');
     if (b) {
-      b.remove()
+      b.remove();
       cc--;
     }
   }, false);
+  // End App stuff
+
+  // ---
 
   // postMessage
   var source, origin;
   var html = document.querySelector('html');
   var body = document.querySelector('body');
   var currentHeight = 0;
+  var clientMsg = 'TExClient';
 
   function updateHeight() {
     var bodyBounds = body.getBoundingClientRect();
@@ -74,7 +85,7 @@
 
   function recebe(event) {
     console.log('recebe', event.data);
-    if (event.data === 'TExClientInit') {
+    if (event.data === clientMsg) {
       origin = event.origin;
       source = event.source;
       envia(currentHeight);
@@ -87,22 +98,27 @@
     console.log('is Iframe!!!', window.top.location.origin);
 
     window.addEventListener('message', recebe);
-    window.parent.postMessage('TExAppInit', window.parent.location.origin);
-    console.log(window.location)
+    window.parent.postMessage(
+      JSON.stringify({
+        'app': 'TExAppReady',
+        'msg': clientMsg,
+        'origin': window.location.origin
+      }), window.parent.location.origin);
 
     // MutationObserver
-    var mo = new MutationObserver(function() {
-      antesEnvia()
+    var mo = new MutationObserver(function(mutations) {
+      console.log('MutationObserver-->', mutations[0].target.tagName + ' ' + mutations[0].type);
+      antesEnvia();
     });
 
-    // configuration of the observer:
     var config = {
       childList: true,
       attributes: true,
-      characterData: true,
+      characterData: false,
       subtree: true,
       attributeOldValue: true,
-      characterDataOldValue: true
+      characterDataOldValue: false,
+      attributeFilter: ['autocomplete']
     };
 
     mo.observe(body, config);

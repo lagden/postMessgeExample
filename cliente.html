@@ -4,7 +4,6 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="Sistema de cotação de seguros on-line desenvolvido pela Tex Tecnologia">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sample Iframe Auto Resize</title>
 </head>
@@ -12,7 +11,7 @@
 <body>
   <main role="main" style="background: red">
     <h1>Site do cliente</h1>
-    <iframe id="app" frameborder="0" src="http://10.0.1.165:8000/app.html" width="100%"></iframe>
+    <iframe id="app" frameborder="0" src="http://localhost:8000/app.html" width="100%"></iframe>
     <!-- <iframe id="app" frameborder="0" src="http://nimble.dev/tex/1" width="100%"></iframe> -->
   </main>
   <script type="text/javascript">
@@ -40,13 +39,18 @@
     h.appendChild(s);
   }
 
-  window.addEventListener('message', function(event) {
-    console.log(event.data);
-    var iframe = document.querySelector('#app');
-    loadJS('cliente.js', function() {
-      IframeResize.load(iframe, 'http://10.0.1.165:8000');
-    });
-  });
+  function iframeMsg(event) {
+    window.removeEventListener('message', iframeMsg, false);
+    var item = JSON.parse(event.data);
+    if (item.app === 'TExAppReady') {
+      loadJS('cliente.js', function() {
+        var iframe = document.querySelector('#app');
+        var ir = new IframeResize(iframe, item.msg, item.origin, true);
+      });
+    }
+  }
+
+  window.addEventListener('message', iframeMsg, false);
   </script>
 </body>
 
